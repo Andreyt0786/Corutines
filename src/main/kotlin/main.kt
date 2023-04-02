@@ -49,18 +49,19 @@ suspend fun <T> makeRequest(url: String, typeToken: TypeToken<T>): T =
 
 
 fun main() {
-    var postWithComments: List<PostWithComments> = emptyList()
     with(CoroutineScope(EmptyCoroutineContext)) {
         launch {
             val posts = makeRequest(url = "$BASE_URL/api/posts", object : TypeToken<List<Post>>() {})
-            posts.map { post ->
+           val postsMap = posts.map { post ->
                 async {
-                    postWithComments = listOf(PostWithComments(post,
+                   PostWithComments(post,
                         makeRequest(url = "$BASE_URL/api/authors/${post.id}", object : TypeToken<Author>() {}),
                         makeRequest(url = "$BASE_URL/api/posts/${post.id}/comments",
-                            object : TypeToken<List<Comment>>() {})))
+                            object : TypeToken<List<Comment>>() {}))
                 }
             }.awaitAll()
+            println(postsMap)
+
         }
     }
     Thread.sleep(50_000L)
